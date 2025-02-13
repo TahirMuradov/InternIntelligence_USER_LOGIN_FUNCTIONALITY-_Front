@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import Loader from "../common/Loader"
 import Swal from "sweetalert2"
-import { title } from "process"
+
 
 const LoginForm:React.FC=()=>{
    let router= useRouter()
@@ -24,7 +24,7 @@ async function  login(){
           SetLoader(false);
 if(response?.ok){
   
-  await router.push("/dashboard");
+  await router.push("/");
 
 }else{
   
@@ -133,7 +133,7 @@ onClick={()=>login()}
             </Link>
           </p>
           <p>
-           Şifrəni Unutmusuz?{" "}
+          Forgot the password?{" "}
             <Link href="/auth/forgotpassword" className="text-primary">
               Forgot Password
             </Link>

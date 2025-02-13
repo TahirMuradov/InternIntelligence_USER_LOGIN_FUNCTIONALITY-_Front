@@ -1,4 +1,5 @@
 "use client"
+import Result from "@/types/ApiResultType";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
 
@@ -6,27 +7,18 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 
 
-const RegisterForm:React.FC<{params:{apiDomen:string|undefined}}>=({params:{apiDomen}})=>{
+const RegisterForm:React.FC<{params:{apiDomen:string|undefined}}>= ({params:{apiDomen}})=>{
     const router=useRouter();
     const[loader,SetLoader]=useState<boolean>(false)
   
-    function HandleSubmit(e:React.FormEvent<HTMLFormElement>){
+   async function  HandleSubmit(e:React.FormEvent<HTMLFormElement>){
 
         e.preventDefault();
         SetLoader(true);
         const form=new FormData(e.currentTarget)
  
-      console.log( JSON.stringify({
-        firstname:form.get("fisrtname"),
-        lastname:form.get("lastname") ,
-        email: form.get("email") ,
-        phoneNumber: form.get("phoneNumber") ,
-        adress: form.get("adress"),
-        username: form.get("username"),
-        password: form.get("password"),
-        confirmPassword: form.get("confirmPassword")
-      }))
-        fetch(`${apiDomen}api/Auth/Register`, {
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+     var response=await   fetch(`${apiDomen}api/Auth/Register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -35,69 +27,54 @@ const RegisterForm:React.FC<{params:{apiDomen:string|undefined}}>=({params:{apiD
               firstname:form.get("firstname"),
               lastname:form.get("lastname") ,
               email: form.get("email") ,
-              phoneNumber: form.get("phoneNumber") ,
-              adress: form.get("adress"),
+              phoneNumber: form.get("phoneNumber") ,             
               username: form.get("username"),
               password: form.get("password"),
               confirmPassword: form.get("confirmPassword")
             }),
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.isSuccess) {
-                Swal.fire({
-                    title: 'Qeydiyyat Ugurla Başa Çatdı!',
-                    text: 'Elektron Poçtunuza təsdiqləmə linki Göndərildi!',
-                    icon: 'success',
-                    confirmButtonText: 'Ok!'
-                }).then((res) => {
-                    if (res.isConfirmed) {
-                        SetLoader(false)
-                                 router.push("/auth/login")          
-                      
-                    }
-                });
-            } else {
-                let errorMessage="";
-                if (result.message) {
-                    errorMessage=result.message
-                }else{
-                    errorMessage = "<ul>";
-                    result.messages.forEach((error: any) => {errorMessage+=`<li>${error}</li>`})
-               
-               
-            errorMessage += "</ul>";
-                }
-                Swal.fire({
-                    title: 'Error!',
-                 
-                    html: errorMessage || 'Failed to add category!',
-                    icon: 'error',
-                    confirmButtonText: 'Cool'
-                }).then((res)=>{
-if (res.isConfirmed) {
-    SetLoader(false)
- 
-    router.refresh();
-}
-                });
-            }
-        })
-        .catch(error => {
-
-            Swal.fire({
-                title: 'Error!',
-                text: 'An unexpected error occurred!',
-                icon: 'error',
-                confirmButtonText: 'Cool'
-            }).then((res)=>{
-if (res.isConfirmed) {
-    SetLoader(false)
-
-    router.refresh();
-}
-            });
         });
+        if(response.ok){
+          Swal.fire({
+             title: 'Success',
+             html: `"Registration was successful! A confirmation link has been sent to your email."`,
+              icon: 'success',
+              confirmButtonText: 'Ok!',
+              allowOutsideClick:false,
+              allowEscapeKey:false
+                          }).then(x=>{
+                            if (x.isConfirmed) {
+                              router.push("/auth/login")
+                            }
+                          })
+        }
+        else{
+          var result:Result<null>=await response.json();
+                  let errors = "<ul>";
+                        if (Array.isArray(result.messages)) {
+                        
+                            result.messages.forEach((message:string)=> {
+                                errors += `<li>${message}</li>`;
+                            });
+                        } else if (result.message) {
+                         
+                            errors += `<li>${result.message}</li>`;
+                        }
+                        errors += "</ul>";
+                        Swal.fire({
+                          title: 'Error',
+                          allowEscapeKey:false,
+                          allowOutsideClick:false,
+                          html:errors,
+                          icon: 'error',
+                        }).then(x=>{
+                          if (x.isConfirmed) {
+                            router.refresh();
+                          }
+                        })
+                   
+       
+        }
+    
         
           }
     return(
@@ -106,18 +83,19 @@ if (res.isConfirmed) {
     <>
         <form id="registerForm" className="grid grid-cols-2 gap-2" onSubmit={(e)=>HandleSubmit(e)}>
                 <div className="mb-4">
-                  <label className="mb-2.5 block font-medium text-black">
+                  <label className="mb-2.5 block font-medium  text-black">
                     First Name
                   </label>
                   <div className="relative">
-                    <input
+                    <input  
+                    required
                     name="firstname"
                       type="text"
                       placeholder="Enter your First name"
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none"
                     />
 
-                    <span className="absolute right-4 top-4">
+                    <span className="absolute right-4 top-4 ">
                       <svg
                         className="fill-current"
                         width="22"
@@ -146,6 +124,7 @@ if (res.isConfirmed) {
                   </label>
                   <div className="relative">
                     <input
+                    required
                     name="lastname"
                       type="text"
                       placeholder="Enter your Last name"
@@ -181,6 +160,7 @@ if (res.isConfirmed) {
                   </label>
                   <div className="relative">
                     <input
+                    required
                     name="username"
                       type="text"
                       placeholder="Enter your User Name"
@@ -216,6 +196,7 @@ if (res.isConfirmed) {
                   </label>
                   <div className="relative">
                     <input
+                    required
                     name="email"
                       type="email"
                       placeholder="Enter your email"
@@ -261,28 +242,7 @@ if (res.isConfirmed) {
 
                   </div>
                 </div>
-                <div className="mb-4 col-span-2">
-                  <label className="mb-2.5 block font-medium text-black">
-                Address
-                  </label>
-                  <div className="relative">
-                    <input
-                    name="adress"
-                      type="text"
-                      placeholder="Enter your address"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none"
-                    />
-<span className="absolute right-4 top-4">
-
-<svg className="w-6 h-6 text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.8 13.938h-.011a7 7 0 1 0-11.464.144h-.016l.14.171c.1.127.2.251.3.371L12 21l5.13-6.248c.194-.209.374-.429.54-.659l.13-.155Z"/>
-</svg>
-
-</span>
-
-                  </div>
-                </div>
+              
               
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black">
@@ -290,6 +250,7 @@ if (res.isConfirmed) {
                   </label>
                   <div className="relative">
                     <input
+                    required
                     name="password"
                       type="password"
                       placeholder="Enter your password"
@@ -325,6 +286,7 @@ if (res.isConfirmed) {
                   </label>
                   <div className="relative">
                     <input
+                    required
                     name="confirmPassword"
                       type="password"
                       placeholder="Re-enter your password"

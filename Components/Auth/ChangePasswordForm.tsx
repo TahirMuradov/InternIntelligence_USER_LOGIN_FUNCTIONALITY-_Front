@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import forgot from "@/public/forgoutPassword.png";
-import logo from "@/public/İSTANBUL.png";
+
 import Image from "next/image";
 
 import { useRouter } from "next/navigation";
@@ -37,7 +37,7 @@ const ChangePasswordForm: React.FC<{apiDomen: string | undefined; email: string;
           });
         }
       });
-    
+    return;
     }
 
  const respons= await  fetch(
@@ -57,12 +57,12 @@ const ChangePasswordForm: React.FC<{apiDomen: string | undefined; email: string;
         if (respons.status === 200) {
           Swal.fire({
             title: "Success!",
-            text: "Şifrəniz uğurla dəyişdirildi!",
+            text: "Your password has been changed successfully!",
             icon: "success",
             confirmButtonText: "Ok",
           }).then((res) => {
             if (res.isConfirmed) {
-              route.push("/");
+              route.push("/auth/login");
             }
           });
         }else{
@@ -102,9 +102,9 @@ const ChangePasswordForm: React.FC<{apiDomen: string | undefined; email: string;
         <div className="flex flex-wrap items-center">
           <div className="hidden w-full xl:block xl:w-1/2">
             <div className="px-26 py-17.5 text-center">
-              <Link className="mb-5.5 inline-block" href="/">
+              {/* <Link className="mb-5.5 inline-block" href="/">
                 <Image className="" src={logo} alt="Logo" width={176} height={32} />
-              </Link>
+              </Link> */}
               <span className="mt-15 relative inline-block w-full">
                 <Image width={640} height={480} src={forgot} alt="forgotpassword" />
               </span>
@@ -143,11 +143,11 @@ const ChangePasswordForm: React.FC<{apiDomen: string | undefined; email: string;
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-black transition hover:bg-opacity-90"
                   />
                 </div>
-                <div className="mt-6 text-center">
+                <div className="mt-6 text-center text-black">
                   <p>
-                    Daxil olmaq istəyirsiniz?{" "}
-                    <Link href="/auth/register" className="text-primary">
-                      Daxil ol
+                  Already have an account?{" "}
+                    <Link href="/auth/login" className="text-black">
+                      Sign in
                     </Link>
                   </p>
                 </div>

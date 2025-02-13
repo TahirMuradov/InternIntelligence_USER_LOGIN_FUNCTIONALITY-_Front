@@ -3,17 +3,19 @@ import Link from "next/link"
 import forgot from "@/public/forgoutPassword.png"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import Swal from "sweetalert2"
+import Result from "@/types/ApiResultType"
 
 const ForgotPassword:React.FC<{apiDomen:string|undefined}>=({apiDomen})=>{
     const route=useRouter();
-    function Submit(e:React.FormEvent<HTMLFormElement>){
+  async  function Submit(e:React.FormEvent<HTMLFormElement>){
         e.preventDefault();
         const form = new FormData(e.currentTarget);
         const email=form.get("email");
         if (email===null||email===undefined) {
             route.refresh();
         }
-        fetch(`${apiDomen}api/Auth/SendEmailTokenForForgotPassword?Email=${email}`, {
+      var response=await  fetch(`${apiDomen}api/Auth/SendEmailTokenForForgotPassword?Email=${email}`, {
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
@@ -22,6 +24,57 @@ const ForgotPassword:React.FC<{apiDomen:string|undefined}>=({apiDomen})=>{
             cache: "no-store",
             method: "PUT",
           });
+          if (response.ok) {
+            Swal.fire({
+              title: 'Info',
+              html: `Confirmation link has been sent to your email.`,
+             icon: 'info',
+             confirmButtonText: 'Ok!',
+             allowEscapeKey:false,
+             allowOutsideClick:false
+                           }).then(x=>{
+                            if (x.isConfirmed) {
+                              route.push("/auth/login")
+                            }
+                           })
+          }
+       
+          if (!response.ok) {
+        
+            let errors = "<ul>";
+            if (response.status==401) {
+              errors += `<li>UnAuthorized</li>`;
+            }
+                if (response.status!==200){
+                  var result:Result<null>=await response.json();
+                 
+                 
+                    if (Array.isArray(result.messages)) {
+                    
+                        result.messages.forEach((message:string)=> {
+                            errors += `<li>${message}</li>`;
+                        });
+                    } else if (result.message) {
+                     
+                        errors += `<li>${result.message}</li>`;
+                    }
+                    errors += "</ul>";
+               
+                
+                }
+                Swal.fire({
+                  title: 'Error',
+                  html: `${errors}`,
+                 icon: 'error',
+                 confirmButtonText: 'Ok!',
+                 allowEscapeKey:false,
+                 allowOutsideClick:false
+                               }).then(x=>{
+                                if (x.isConfirmed) {
+                                  route.refresh()
+                                }
+                               })
+          }
       }
     
     return(  <div className="w-4/5 mx-auto my-3">

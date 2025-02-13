@@ -53,8 +53,6 @@ const handler = NextAuth({
           let errors = "<ul>";
       if (res.status==401) {
         errors += `<li>UnAuthorized</li>`;
-      }else{
-        throw new Error(`${res.statusText} api response error`);
       }
           if (res.ok) {
 

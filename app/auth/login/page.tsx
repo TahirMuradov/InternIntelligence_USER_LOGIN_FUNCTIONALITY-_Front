@@ -21,9 +21,7 @@ const SignIn: React.FC = () => {
             <div className="px-26 py-17.5 text-center">
           
 
-              <p className="2xl:px-20">
-            
-              </p>
+          
 
               <span className="mt-15 inline-block">
                 <svg
